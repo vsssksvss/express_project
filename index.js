@@ -12,3 +12,7 @@ app.get('/ping', (req, res) => {
   app.get('/asdf', (req, res) => {
     res.send('sad');
   });
+
+  app.get('/abc', (req, res) => {
+    res.send('가나다');
+  });
