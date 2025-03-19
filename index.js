@@ -174,6 +174,37 @@ app.get('/ping', (req, res) => {
     return res.json("ok")
   })
 
+  // app.delete('/articles/:id', (req, res)=>{
+  //   let index = req.params.id
+  //   console.log(index)
+  //   articles.splice(index, 1);
+
+  //   return res.json("Article deleted successfully")
+  // })
+  app.delete('/articles/:id', (req, res) => {
+    let articleId = parseInt(req.params.id);
+    console.log(articleId);
+
+    let found = false;
+
+    for (let i = 0; i < articles.length; i++) {
+        if (articles[i].id === articleId) {
+            articles.splice(i, 1);
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        return res.status(404).json({ error: "해당 ID의 게시물이 존재하지 않습니다." });
+    }
+
+    return res.json("Article deleted successfully");
+});
+
+
+
+
   app.get('/test', (req, res) => {
     
     console.log(req.query)
