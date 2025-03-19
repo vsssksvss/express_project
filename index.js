@@ -2,6 +2,10 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
+// cors 문제 해결
+const cors = require('cors');
+app.use(cors());
+
 // json으로 된 post의 바디를 읽기 위해 사용
 app.use(express.json())
 

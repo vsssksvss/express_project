@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시판</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        input, textarea, button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .article {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        .article h2 {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>게시판</h1>
+    <form id="postForm">
+        <input type="text" id="title" placeholder="제목" required>
+        <textarea id="content" placeholder="내용" required></textarea>
+        <button type="submit">게시글 작성</button>
+    </form>
+    <div id="articles"></div>
+    
+    <script>
+               async function fetchArticles() {
+            const response = await fetch('http://localhost:3000/articles');
+            const articles = await response.json();
+            const articleContainer = document.getElementById('articles');
+            articleContainer.innerHTML = '';
+            articles.forEach(article => {
+                const articleDiv = document.createElement('div');
+                articleDiv.classList.add('article');
+                articleDiv.innerHTML = `<h2>${article.title}</h2><p>${article.content}</p>`;
+                articleContainer.appendChild(articleDiv);
+            });
+        }
+        
+        document.getElementById('postForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            
+            const response = await fetch('http://localhost:3000/articles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, content, author_id: 1 })
+            });
+            
+            if (response.ok) {
+                fetchArticles();
+                document.getElementById('postForm').reset();
+            }
+        });
+        
+        
+        fetchArticles();
+    </script>
+</body>
+</html>
