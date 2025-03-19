@@ -196,7 +196,7 @@ app.get('/ping', (req, res) => {
     }
 
     if (!found) {
-        return res.status(404).json({ error: "해당 ID의 게시물이 존재하지 않습니다." });
+        return res.status(404).json({ error: "Article not found" });
     }
 
     return res.json("Article deleted successfully");
