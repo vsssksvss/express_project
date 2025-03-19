@@ -96,13 +96,7 @@ const articles = [
       "author_id": 4,
       "date": "2025-03-15T10:10:00Z"
     },
-    {
-      "id": 5,
-      "title": "다섯 번째 게시글 제목",
-      "content": "다섯 번째 게시글 내용입니다.",
-      "author_id": 5,
-      "date": "2025-03-14T18:45:00Z"
-    },
+
     {
       "id": 6,
       "title": "여섯 번째 게시글 제목",
@@ -182,5 +176,18 @@ app.get('/ping', (req, res) => {
         }
     }
 
+
     res.send('ok')
+  })
+  app.get('/articles/:id', (req, res)=> {
+    let article_id = req.params.id
+
+    for(let i =0; i < articles.length ; i++){
+      if(articles[i].id == article_id){
+        return res.json(articles[i])
+      }
+    }
+
+
+    res.json('없었습니다!.')
   })
