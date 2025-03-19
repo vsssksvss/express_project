@@ -1,3 +1,5 @@
+// bit.ly/smcom2025
+
 const express = require('express');
 const app = express();
 const PORT = 3000;
@@ -174,13 +176,7 @@ app.get('/ping', (req, res) => {
     return res.json("ok")
   })
 
-  // app.delete('/articles/:id', (req, res)=>{
-  //   let index = req.params.id
-  //   console.log(index)
-  //   articles.splice(index, 1);
 
-  //   return res.json("Article deleted successfully")
-  // })
   app.delete('/articles/:id', (req, res) => {
     let articleId = parseInt(req.params.id);
     console.log(articleId);
@@ -194,6 +190,18 @@ app.get('/ping', (req, res) => {
             break;
         }
     }
+
+    app.put('/articles', (req, res)=> {
+      let id = req.params.id - 1
+      let data = req.body
+      console.log(data)
+
+      articles[id] = data
+
+      console.log(id)
+
+      res.send("ok")
+    })
 
     if (!found) {
         return res.status(404).json({ error: "Article not found" });
