@@ -33,7 +33,29 @@ app.post('/articles', (req, res) => {
     });
 });
   
-app.get('/articles', (req, res)=> {
-    
-    res.send('dd')
-})
+
+app.get('/articles', (req, res) => {
+    db.all(`SELECT * FROM articles`, [], (err, rows) => {
+      if (err) {
+        return res.status(500).json({error: err.message});
+      }
+      res.json(rows);
+    });
+  });
+  
+  
+app.get('/articles/:id', (req, res) => {
+    const id = req.params.id;
+  
+    db.get(`SELECT * FROM articles WHERE id = ?`, [id], (err, row) => {
+      if (err) {
+        return res.status(500).json({error: err.message});
+      }
+      if (!row) {
+        return res.status(404).json({error: "데이터가 없습니다."});
+      }
+      res.json(row);
+    });
+  });
+  
+  
