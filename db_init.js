@@ -20,6 +20,21 @@ function initDB() {
     }
   });
 }
+// 테이블 생성
+db.serialize(() => {
+  db.run(`CREATE TABLE articles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      content TEXT
+  )`);
+  db.run(`CREATE TABLE comments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      article_id INTEGER,
+      content TEXT,
+      FOREIGN KEY(article_id) REFERENCES articles(id) ON DELETE CASCADE
+  )`);
+});
+
 
 initDB();
 

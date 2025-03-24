@@ -59,3 +59,44 @@ app.get('/articles/:id', (req, res) => {
   });
   
   
+  app.get('/articles/:id/comments', (req, res) => {
+    const articleId = req.params.id;
+    db.all(`SELECT * FROM comments WHERE article_id = ?`, [articleId], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
+app.post('/articles/:id/comments', (req, res) => {
+    const articleId = req.params.id;
+    const { content } = req.body;
+    db.run(`INSERT INTO comments (article_id, content) VALUES (?, ?)`, [articleId, content], function(err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ id: this.lastID, article_id: articleId, content });
+    });
+});
+
+app.put('/comments/:commentId', (req, res) => {
+    const commentId = req.params.commentId;
+    const { content } = req.body;
+    db.run(`UPDATE comments SET content = ? WHERE id = ?`, [content, commentId], function(err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ id: commentId, content });
+    });
+});
+
+app.delete('/comments/:commentId', (req, res) => {
+    const commentId = req.params.commentId;
+    db.run(`DELETE FROM comments WHERE id = ?`, [commentId], function(err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ message: "댓글이 삭제되었습니다." });
+    });
+});
