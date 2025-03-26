@@ -3,6 +3,9 @@ const app = express();
 // cors 문제해결
 const cors = require('cors');
 app.use(cors());
+require('dotenv').config();
+const secretKey = process.env.SECRET_KEY;
+
 // json으로 된 post의 바디를 읽기 위해 필요
 app.use(express.json())
 const PORT = 3000;
