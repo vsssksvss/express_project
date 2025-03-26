@@ -9,6 +9,28 @@ const jwt = require('jsonwebtoken');
 const SECRET_KEY = "your_secret_key"; // 실제 서비스에선 더 복잡하고 안전하게!
 const PORT = 3000;
 
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).send("인증 실패: 토큰이 없습니다.");
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(403).send("인증 실패: 유효하지 않은 토큰입니다.");
+    }
+
+    req.user = decoded; // 토큰 디코딩 정보를 저장해서 다음 미들웨어에서 사용 가능
+    next(); // 다음 미들웨어(혹은 라우트)로 이동
+  });
+};
+
+module.exports = authMiddleware;
+
+
 //db 연결
 const sqlite3 = require('sqlite3').verbose();
 
@@ -18,7 +40,8 @@ app.listen(PORT, () => {
     console.log(`서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
   });
   
-  app.post("/articles", (req, res) => {
+  // 로그인 필요
+  app.post("/articles",authMiddleware, (req, res) => {
     // 토큰 확인
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -52,6 +75,7 @@ app.listen(PORT, () => {
 // 전체 아티클 리스트 주는 api를 만들어주세요
 // GET : /articles
 
+// 로그인 불필요
 app.get('/articles',(req, res)=>{
 
     db.all("SELECT * FROM articles", [], (err, rows) => {
@@ -65,6 +89,7 @@ app.get('/articles',(req, res)=>{
 
 // 개별 아티클을 주는 api를 만들어주세요 
 // GET : /articles/:id
+// 로그인 불필요
 app.get('/articles/:id', (req, res)=>{
     let id = req.params.id
 
@@ -80,8 +105,9 @@ app.get('/articles/:id', (req, res)=>{
 
 })
 
-
-app.delete("/articles/:id", (req, res)=>{
+// 로그인 필요
+// 게시글이 본인인지 확인 필요 (추후 적용 예정)
+app.delete("/articles/:id",authMiddleware, (req, res)=>{
   const id = req.params.id
 
 
@@ -97,7 +123,9 @@ app.delete("/articles/:id", (req, res)=>{
 
 })
 
-app.put('/articles/:id', (req, res)=>{
+// 로그인 필요
+// 게시글이 본인인지 확인 필요 (추후 적용 예정)
+app.put('/articles/:id',authMiddleware, (req, res)=>{
   let id = req.params.id
   // let title = req.body.title
   // let content = req.body.content
@@ -136,7 +164,8 @@ app.post('/posttest', (req, res)=>{
 
 
 // POST /articles/:id/comments 라우트
-app.post("/articles/:id/comments", (req, res) => {
+// 로그인 필요
+app.post("/articles/:id/comments",authMiddleware, (req, res) => {
   const articleId = req.params.id;
   const content = req.body.content;
   
@@ -166,6 +195,7 @@ app.post("/articles/:id/comments", (req, res) => {
 const bcrypt = require('bcrypt');
 const saltRounds = 10; // 일반적으로 10이면 충분함
 
+// 로그인 불필요
 app.post('/users', (req, res) => {
   const { email, password } = req.body;
 
@@ -197,6 +227,7 @@ app.post('/users', (req, res) => {
   });
 });
 
+// 로그인 필요
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
