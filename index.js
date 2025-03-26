@@ -1,35 +1,38 @@
 const express = require('express');
 const app = express();
+
+require('dotenv').config();
+
+
+const SECRET_KEY= process.env.SECRET_KEY;
+
+
 // cors 문제해결
 const cors = require('cors');
 app.use(cors());
 // json으로 된 post의 바디를 읽기 위해 필요
 app.use(express.json())
 const jwt = require('jsonwebtoken');
-const SECRET_KEY = "your_secret_key"; // 실제 서비스에선 더 복잡하고 안전하게!
-const PORT = 3000;
-
-const authMiddleware = (req, res, next) => {
+function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).send("인증 실패: 토큰이 없습니다.");
+
+  if (!authHeader) {
+    return res.status(401).send('인증 헤더 없음');
   }
 
   const token = authHeader.split(' ')[1];
 
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
     if (err) {
-      return res.status(403).send("인증 실패: 유효하지 않은 토큰입니다.");
+      return res.status(401).send('토큰 검증 실패');
     }
 
-    req.user = decoded; // 토큰 디코딩 정보를 저장해서 다음 미들웨어에서 사용 가능
-    next(); // 다음 미들웨어(혹은 라우트)로 이동
+    // 인증 성공 시 decoded 안에 있는 사용자 정보 req에 저장
+    req.user = decoded;
+    next(); // 다음 미들웨어 or 라우터로
   });
-};
-
-module.exports = authMiddleware;
-
+}
+const PORT = 3000;
 
 //db 연결
 const sqlite3 = require('sqlite3').verbose();
@@ -163,18 +166,21 @@ app.post('/posttest', (req, res)=>{
 })
 
 
+// 로그인 필요
+app.get("articles/:id/comments",authMiddleware, (req, res)=> {
+  
+})
+
 // POST /articles/:id/comments 라우트
 // 로그인 필요
 app.post("/articles/:id/comments",authMiddleware, (req, res) => {
   const articleId = req.params.id;
   const content = req.body.content;
   
-  // 현재 날짜/시간을 ISO 문자열 형태로 생성
-  const createdAt = new Date().toISOString();
-
+ 
   // comments 테이블에 INSERT 쿼리 실행
-  const sql = `INSERT INTO comments (content, created_at, article_id) VALUES (?, ?, ?)`;
-  db.run(sql, [content, createdAt, articleId], function(err) {
+  const sql = `INSERT INTO comments (content, article_id) VALUES (?, ?)`;
+  db.run(sql, [content, articleId], function(err) {
     if (err) {
       console.error("댓글 삽입 중 에러 발생:", err);
       return res.status(500).json({ error: "댓글을 등록하는데 실패했습니다." });
@@ -184,7 +190,6 @@ app.post("/articles/:id/comments",authMiddleware, (req, res) => {
     res.status(201).json({
       id: this.lastID,
       content: content,
-      created_at: createdAt,
       article_id: articleId
     });
   });
@@ -272,17 +277,12 @@ app.post('/login', (req, res) => {
   });
 });
 
-app.get('/logintest', (req, res)=>{
-  console.log(req.headers.authorization.split(' ')[1])
-  let token = req.headers.authorization.split(' ')[1]
+app.get('/logintest', authMiddleware, (req, res) => {
+  // req.user에 디코딩된 정보 있음
+  res.send(`로그인 성공! 사용자: ${req.user.name || '알 수 없음'}`);
+});
 
-
-  jwt.verify(token, SECRET_KEY, (err, decoded)=>{
-    if(err){
-      return res.send("에러!!!")
-    }
-
-    return res.send('로그인 성공!')
-
-  })
-})
+// 로그인 필요 없는 라우터는 그냥 사용
+app.get('/public', (req, res) => {
+  res.send('누구나 접근 가능!');
+});
